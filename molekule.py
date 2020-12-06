@@ -3,10 +3,8 @@ import os
 import json
 import pyspark
 from pyspark.sql import SparkSession
-
-# To set your enviornment variables in your terminal run the following line:
-# export 'BEARER_TOKEN'='<your_bearer_token>'
-
+import pyspark.sql.functions as F
+from pyspark.sql.functions import col
 
 def create_url():
     url = "https://data.smcgov.org/resource/mb6a-xn89.json"
@@ -27,7 +25,6 @@ def main():
     json_response = connect_to_endpoint(url)
     print(json.dumps(json_response, indent=4))
     with open("sample.json", "w+") as outfile: 
-        #outfile.write((json_response))
         json.dump(json_response, outfile)
 
 
@@ -38,8 +35,7 @@ if __name__ == "__main__":
 #Reading data from the local and saving to the df
     df = spark.read.load("sample.json",format="json", inferSchema="true", header="true")
     df1 = df.withColumnRenamed(':@computed_region_i2t2_cryp','compregion_i2t2_cryp').withColumnRenamed(':@computed_region_uph5_8hpn','compregionuph5_8hpn')
-    import pyspark.sql.functions as F
-    from pyspark.sql.functions import col
+    
     df2 = df1.select(F.col("location_1.coordinates").alias("coordinates"), F.col("location_1.type").alias("type"),F.col("location_1"))
 
     length = len(df2.select('coordinates').take(1)[0][0])
